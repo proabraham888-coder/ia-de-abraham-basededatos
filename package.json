@@ -1,7 +1,7 @@
 {
-  "name": "alya-ia-db-pro",
-  "version": "1.0.0",
-  "description": "Base de datos privada con IA Alyacore",
+  "name": "abraham-ai-ultra",
+  "version": "1.1.0",
+  "description": "IA Híbrida con Efectos de Sonido y Voz",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
