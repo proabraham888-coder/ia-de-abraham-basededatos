@@ -1,6 +1,7 @@
 {
-  "name": "ia-buscador-personas",
+  "name": "alya-ia-db-pro",
   "version": "1.0.0",
+  "description": "Base de datos privada con IA Alyacore",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -8,6 +9,6 @@
   "dependencies": {
     "express": "^4.18.2",
     "express-basic-auth": "^1.2.1",
-    "@google/generative-ai": "^0.11.0"
+    "axios": "^1.6.0"
   }
 }
