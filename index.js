@@ -4,7 +4,7 @@ const fs = require('fs');
 const axios = require('axios');
 const app = express();
 
-// SEGURIDAD: Tu usuario y contraseña
+// SEGURIDAD
 app.use(basicAuth({
     users: { "abraham": "12345" },
     challenge: true
@@ -14,7 +14,7 @@ app.use(basicAuth({
 const apikey_base64 = 'c2stcHJvai1tUzN4bGZueXo0UjBPWV8zbm1DVDlMQmlmYXhYbVdaa0ptUVFJMDVKR2FxdHZCbk9ncWZjRXdCbEJmMU5WN0lYa0pncVJuM3BNc1QzQmxia0ZKMVJ5aEJzUl93NzRXbll5LWdjdkowT0NQUXliWTBOcENCcDZIOTlCVVVtcWxuTjVraEZxMk43TGlMU0RsU0s1cXA5Tm1kWVZXc0E=';
 const OPENAI_KEY = Buffer.from(apikey_base64, 'base64').toString('utf-8');
 
-// INTERFAZ VISUAL (Chat, Sonidos y Voz)
+// INTERFAZ VISUAL
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>GataBot-MD | Abraham AI</title>
             <style>
-                body { font-family: 'Segoe UI', sans-serif; background: #0b0f1a; color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+                body { font-family: sans-serif; background: #0b0f1a; color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
                 .card { background: #161e2d; padding: 20px; border-radius: 25px; width: 95%; max-width: 450px; height: 85vh; display: flex; flex-direction: column; box-shadow: 0 15px 50px rgba(0,0,0,0.6); border: 1px solid #2d3748; }
                 #chat { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; padding: 10px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
                 .msg { padding: 12px 16px; border-radius: 15px; font-size: 14px; max-width: 85%; line-height: 1.5; }
@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
         <body>
             <div class="card">
                 <h2 style="text-align:center; color:#38bdf8; margin:0 0 10px 0; font-size:18px;">🐈 GATABOT-MD AI</h2>
-                <div id="chat"><div class="msg ai">¡Hola Abraham! Soy GataBot-MD. ¿A quién buscamos hoy en tu base de datos o en internet?</div></div>
+                <div id="chat"><div class="msg ai">¡Hola! Soy GataBot-MD. ¿A quién buscamos hoy?</div></div>
                 <div id="barra" class="loader"></div>
                 <div class="input-area">
                     <input type="text" id="p" placeholder="Escribe tu petición..." onkeypress="if(event.key==='Enter') buscar()">
@@ -86,24 +86,23 @@ app.get('/', (req, res) => {
     `);
 });
 
-// LÓGICA DE IA (HYBRIDA: ALYACORE + OPENAI)
+// LÓGICA DE IA
 app.get('/api/ia', async (req, res) => {
     const text = req.query.q;
-    const db = fs.readFileSync('personas.json', 'utf-8');
+    let db = "Sin datos";
+    try { db = fs.readFileSync('personas.json', 'utf-8'); } catch(e) {}
     
-    // PERSONALIDAD GATABOT + DATA PRIVADA
-    const syms1 = "Actuaras como un Bot de WhatsApp el cual fue creado por GataNina-Li, tu seras GataBot-MD. Tienes acceso a esta base de datos: " + db;
+    const syms1 = "Actuaras como un Bot de WhatsApp creado por GataNina-Li, eres GataBot-MD. Datos: " + db;
 
     try {
-        // 1. INTENTO CON ALYACORE (Rápido)
+        // Intento 1: Alyacore
         const response = await axios.get('https://api.alyacore.xyz/ai/chatgpt', {
             params: { text: "Instruccion: " + syms1 + ". Pregunta: " + text, key: 'Alya-QLK5j2wJ' }
         });
         if (response.data && response.data.result) return res.send(response.data.result);
         throw new Error();
-
     } catch (err) {
-        // 2. RESPALDO CON OPENAI GPT-4O-MINI (Premium)
+        // Intento 2: OpenAI (CORREGIDO)
         try {
             const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
                 model: 'gpt-4o-mini',
@@ -112,11 +111,11 @@ app.get('/api/ia', async (req, res) => {
                     {role: 'user', content: text}
                 ]
             }, {
-                headers: { 'Authorization': \`Bearer \${OPENAI_KEY}\` }
+                headers: { 'Authorization': 'Bearer ' + OPENAI_KEY }
             });
             res.send(gptRes.data.choices[0].message.content);
         } catch (err2) {
-            res.status(500).send("Error crítico: Ninguna IA respondió.");
+            res.status(500).send("Ninguna IA respondió.");
         }
     }
 });
