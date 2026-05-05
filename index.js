@@ -7,7 +7,7 @@ const app = express();
 // --- CONFIGURACIÓN ---
 const USUARIO = "admin"; 
 const PASSWORD = "TuPasswordSeguro"; // La contraseña que darás a tus amigos
-const DESTINO = "http://LINK-DE-TU-OTRO-SERVIDOR.com"; // Aquí pones el link del servidor de Java
+const DESTINO = "http://145.2.1.50:8080"; // Aquí pones el link del servidor de Java
 // ---------------------
 
 app.use(basicAuth({
