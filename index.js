@@ -4,11 +4,13 @@ const fs = require('fs');
 const axios = require('axios');
 const app = express();
 
+// Seguridad: Usuario y Contraseña
 app.use(basicAuth({
     users: { "abraham": "12345" },
     challenge: true
 }));
 
+// Interfaz Visual
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -23,14 +25,15 @@ app.get('/', (req, res) => {
                 h1 { color: #38bdf8; margin-bottom: 5px; }
                 p { color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
                 input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #334155; background: #0f172a; color: white; outline: none; box-sizing: border-box; }
-                button { width: 100%; padding: 12px; margin-top: 15px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; }
-                #resultado { margin-top: 20px; padding: 15px; background: #1a2232; border-radius: 10px; text-align: left; font-size: 14px; border-left: 4px solid #38bdf8; min-height: 40px; }
+                button { width: 100%; padding: 12px; margin-top: 15px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; transition: 0.3s; }
+                button:hover { background: #7dd3fc; }
+                #resultado { margin-top: 20px; padding: 15px; background: #1a2232; border-radius: 10px; text-align: left; font-size: 14px; border-left: 4px solid #38bdf8; min-height: 40px; color: #e2e8f0; }
             </style>
         </head>
         <body>
             <div class="card">
-                <h1>🤖 Abraham DB-AI</h1>
-                <p>Consulta datos de personas mediante IA</p>
+                <h1>🤖 Abraham AI</h1>
+                <p>Consultor de Base de Datos Personal</p>
                 <input type="text" id="pregunta" placeholder="Ej: ¿Quién es Valentina Gómez?">
                 <button onclick="enviar()">CONSULTAR AHORA</button>
                 <div id="resultado">Esperando pregunta...</div>
@@ -40,12 +43,12 @@ app.get('/', (req, res) => {
                     const input = document.getElementById('pregunta');
                     const r = document.getElementById('resultado');
                     if(!input.value) return;
-                    r.innerHTML = "<span style='color: #38bdf8;'>Buscando en la base de datos...</span>";
+                    r.innerHTML = "<span style='color: #38bdf8;'>Buscando información...</span>";
                     try {
                         const res = await fetch('/api/ia?q=' + encodeURIComponent(input.value));
-                        const data = await res.text();
-                        r.innerHTML = data;
-                    } catch (e) { r.innerHTML = "Error de conexión."; }
+                        const text = await res.text();
+                        r.innerHTML = text;
+                    } catch (e) { r.innerHTML = "❌ Error de conexión."; }
                 }
             </script>
         </body>
@@ -53,22 +56,30 @@ app.get('/', (req, res) => {
     `);
 });
 
+// Lógica de la API con el nuevo endpoint
 app.get('/api/ia', async (req, res) => {
+    const q = req.query.q;
     try {
+        // Leemos la base de datos para dársela a la IA
         const db = fs.readFileSync('personas.json', 'utf-8');
-        const promptInterno = "Eres un buscador de base de datos. Estos son tus únicos datos: " + db + ". Si te preguntan por alguien de la lista, da todos sus datos (edad, ciudad, gmail, etc). Si no está, di que no lo encontraste.";
+        
+        // Creamos el mensaje combinando tus datos y la pregunta
+        const mensajeCompleto = \`Contexto de mi base de datos: \${db}. Pregunta del usuario: \${q}. Responde de forma breve y precisa.\`;
 
-        const response = await axios.get('https://api.alyacore.xyz/ai/gptprompt', {
+        const response = await axios.get('https://api.alyacore.xyz/ai/chatgpt', {
             params: {
-                text: req.query.q,
-                prompt: promptInterno,
+                text: mensajeCompleto,
                 key: 'Alya-QLK5j2wJ'
             }
         });
 
-        res.send(response.data.data || "No pude encontrar esa información.");
+        // La nueva API devuelve la respuesta en response.data.result
+        const respuestaIA = response.data.result || "No pude procesar la información.";
+        res.send(respuestaIA);
+
     } catch (error) {
-        res.status(500).send("Error en la IA.");
+        console.error(error);
+        res.status(500).send("Error: La IA de Alyacore no respondió correctamente.");
     }
 });
 
