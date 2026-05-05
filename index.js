@@ -10,7 +10,7 @@ app.use(basicAuth({
     challenge: true
 }));
 
-// Interfaz
+// Interfaz (Sin cambios, sigue siendo la misma que te gustó)
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -18,19 +18,20 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Abraham AI</title>
+            <title>Abraham AI | Global</title>
             <style>
                 body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
                 .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
                 input { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #0f172a; color: white; margin-bottom: 15px; box-sizing: border-box; outline: none; }
                 button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; }
-                #resultado { margin-top: 20px; text-align: left; background: #111827; padding: 15px; border-radius: 10px; font-size: 14px; min-height: 40px; }
+                #resultado { margin-top: 20px; text-align: left; background: #111827; padding: 15px; border-radius: 10px; font-size: 14px; min-height: 40px; line-height: 1.5; }
             </style>
         </head>
         <body>
             <div class="card">
-                <h1>🤖 Abraham AI</h1>
-                <input type="text" id="p" placeholder="¿A quién buscas?">
+                <h1>🌍 Abraham AI Global</h1>
+                <p>Busca en mi DB o en Internet</p>
+                <input type="text" id="p" placeholder="Ej: Messi o alguien de mi lista">
                 <button onclick="buscar()">CONSULTAR</button>
                 <div id="resultado">Esperando...</div>
             </div>
@@ -39,7 +40,7 @@ app.get('/', (req, res) => {
                     const q = document.getElementById('p').value;
                     const r = document.getElementById('resultado');
                     if(!q) return;
-                    r.innerHTML = "Buscando...";
+                    r.innerHTML = "Investigando...";
                     try {
                         const res = await fetch('/api/ia?q=' + encodeURIComponent(q));
                         const text = await res.text();
@@ -52,25 +53,25 @@ app.get('/', (req, res) => {
     `);
 });
 
-// API con Alyacore
+// Lógica Híbrida (DB Privada + Conocimiento Global)
 app.get('/api/ia', async (req, res) => {
     const q = req.query.q;
     try {
         const db = fs.readFileSync('personas.json', 'utf-8');
         
-        // CORREGIDO: Sin barras invertidas raras
-        const mensajeFinal = "Contexto: " + db + ". Pregunta: " + q;
+        // Aquí está el truco: le damos permiso de buscar fuera si no está en la DB
+        const instrucciones = "Eres un asistente con acceso a dos fuentes: 1) Mi base de datos privada: " + db + ". 2) Tu conocimiento global de internet. Si la persona está en mi base de datos, dame esos datos exactos. Si NO está, busca información pública en internet sobre esa persona y resúmela.";
 
         const response = await axios.get('https://api.alyacore.xyz/ai/chatgpt', {
             params: {
-                text: mensajeFinal,
+                text: "Pregunta: " + q + " | Instrucción: " + instrucciones,
                 key: 'Alya-QLK5j2wJ'
             }
         });
 
-        res.send(response.data.result || "No hay respuesta.");
+        res.send(response.data.result || "No encontré información ni en la DB ni en internet.");
     } catch (e) {
-        res.status(500).send("Error en la IA.");
+        res.status(500).send("Error al consultar la IA.");
     }
 });
 
