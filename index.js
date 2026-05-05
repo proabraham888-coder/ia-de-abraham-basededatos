@@ -4,13 +4,17 @@ const fs = require('fs');
 const axios = require('axios');
 const app = express();
 
-// SEGURIDAD
+// SEGURIDAD: Tu usuario y contraseña
 app.use(basicAuth({
     users: { "abraham": "12345" },
     challenge: true
 }));
 
-// INTERFAZ Y LÓGICA VISUAL
+// DECODIFICACIÓN DE TU LLAVE DE OPENAI
+const apikey_base64 = 'c2stcHJvai1tUzN4bGZueXo0UjBPWV8zbm1DVDlMQmlmYXhYbVdaa0ptUVFJMDVKR2FxdHZCbk9ncWZjRXdCbEJmMU5WN0lYa0pncVJuM3BNc1QzQmxia0ZKMVJ5aEJzUl93NzRXbll5LWdjdkowT0NQUXliWTBOcENCcDZIOTlCVVVtcWxuTjVraEZxMk43TGlMU0RsU0s1cXA5Tm1kWVZXc0E=';
+const OPENAI_KEY = Buffer.from(apikey_base64, 'base64').toString('utf-8');
+
+// INTERFAZ VISUAL (Chat, Sonidos y Voz)
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -18,38 +22,31 @@ app.get('/', (req, res) => {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Abraham AI Ultra</title>
+            <title>GataBot-MD | Abraham AI</title>
             <style>
                 body { font-family: 'Segoe UI', sans-serif; background: #0b0f1a; color: white; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
                 .card { background: #161e2d; padding: 20px; border-radius: 25px; width: 95%; max-width: 450px; height: 85vh; display: flex; flex-direction: column; box-shadow: 0 15px 50px rgba(0,0,0,0.6); border: 1px solid #2d3748; }
                 #chat { flex-grow: 1; overflow-y: auto; margin-bottom: 15px; padding: 10px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-                .msg { padding: 12px 16px; border-radius: 15px; font-size: 14px; max-width: 85%; line-height: 1.5; position: relative; }
-                .user { background: #2d3748; align-self: flex-end; border-bottom-right-radius: 2px; color: #e2e8f0; }
+                .msg { padding: 12px 16px; border-radius: 15px; font-size: 14px; max-width: 85%; line-height: 1.5; }
+                .user { background: #2d3748; align-self: flex-end; border-bottom-right-radius: 2px; }
                 .ai { background: #1e3a8a; align-self: flex-start; border-bottom-left-radius: 2px; border-left: 3px solid #38bdf8; }
-                .loader { height: 3px; width: 0%; background: #38bdf8; margin-bottom: 10px; transition: 0.3s; border-radius: 10px; box-shadow: 0 0 10px #38bdf8; }
+                .loader { height: 3px; width: 0%; background: #38bdf8; margin-bottom: 10px; transition: 0.3s; border-radius: 10px; }
                 .input-area { display: flex; gap: 8px; background: #0b0f1a; padding: 10px; border-radius: 15px; }
-                input { flex-grow: 1; padding: 12px; border: none; background: transparent; color: white; outline: none; font-size: 15px; }
-                button { background: #38bdf8; border: none; padding: 10px 18px; border-radius: 12px; color: #0b0f1a; font-weight: bold; cursor: pointer; transition: 0.2s; }
-                button:active { transform: scale(0.95); }
-                #chat::-webkit-scrollbar { width: 5px; }
-                #chat::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 10px; }
+                input { flex-grow: 1; padding: 12px; border: none; background: transparent; color: white; outline: none; }
+                button { background: #38bdf8; border: none; padding: 10px 18px; border-radius: 12px; font-weight: bold; cursor: pointer; }
             </style>
         </head>
         <body>
             <div class="card">
-                <h2 style="text-align:center; color:#38bdf8; margin-top:0; font-size:18px;">🤖 ABRAHAM AI GLOBAL</h2>
-                <div id="chat">
-                    <div class="msg ai">¡Hola Abraham! Soy tu IA híbrida. Puedo buscar en tu lista de personas o en todo internet. ¿A quién investigamos?</div>
-                </div>
+                <h2 style="text-align:center; color:#38bdf8; margin:0 0 10px 0; font-size:18px;">🐈 GATABOT-MD AI</h2>
+                <div id="chat"><div class="msg ai">¡Hola Abraham! Soy GataBot-MD. ¿A quién buscamos hoy en tu base de datos o en internet?</div></div>
                 <div id="barra" class="loader"></div>
                 <div class="input-area">
-                    <input type="text" id="p" placeholder="Pregunta algo..." onkeypress="if(event.key==='Enter') buscar()">
+                    <input type="text" id="p" placeholder="Escribe tu petición..." onkeypress="if(event.key==='Enter') buscar()">
                     <button onclick="buscar()">ENVIAR</button>
                 </div>
             </div>
-
             <script>
-                // AUDIOS
                 const sndEnviar = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
                 const sndRespuesta = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
 
@@ -60,32 +57,27 @@ app.get('/', (req, res) => {
                     const q = input.value;
                     if(!q) return;
 
-                    // Efecto Enviar
                     sndEnviar.play();
                     chat.innerHTML += '<div class="msg user">' + q + '</div>';
                     input.value = "";
-                    barra.style.width = "100%"; // Activa barra de carga
+                    barra.style.width = "100%";
                     chat.scrollTop = chat.scrollHeight;
 
                     try {
                         const res = await fetch('/api/ia?q=' + encodeURIComponent(q));
                         const text = await res.text();
                         
-                        // Efecto Respuesta
                         sndRespuesta.play();
-                        barra.style.width = "0%"; // Apaga barra
-                        chat.innerHTML += '<div class="msg ai">' + text + '</div>';
+                        barra.style.width = "0%";
+                        chat.innerHTML += '<div class="msg ai"><b>GataBot:</b> ' + text + '</div>';
                         chat.scrollTop = chat.scrollHeight;
 
-                        // Voz
                         const speech = new SpeechSynthesisUtterance(text);
                         speech.lang = 'es-ES';
-                        speech.rate = 1.1;
                         window.speechSynthesis.speak(speech);
-
                     } catch (e) { 
                         barra.style.width = "0%";
-                        chat.innerHTML += '<div class="msg ai">❌ Error al conectar con Alyacore.</div>'; 
+                        chat.innerHTML += '<div class="msg ai">❌ Error en los motores de IA.</div>'; 
                     }
                 }
             </script>
@@ -94,27 +86,40 @@ app.get('/', (req, res) => {
     `);
 });
 
-// LÓGICA DE LA IA (DB + INTERNET)
+// LÓGICA DE IA (HYBRIDA: ALYACORE + OPENAI)
 app.get('/api/ia', async (req, res) => {
-    const q = req.query.q;
+    const text = req.query.q;
+    const db = fs.readFileSync('personas.json', 'utf-8');
+    
+    // PERSONALIDAD GATABOT + DATA PRIVADA
+    const syms1 = "Actuaras como un Bot de WhatsApp el cual fue creado por GataNina-Li, tu seras GataBot-MD. Tienes acceso a esta base de datos: " + db;
+
     try {
-        const db = fs.readFileSync('personas.json', 'utf-8');
-        
-        // Instrucción Híbrida
-        const promptTotal = "Instrucciones: Eres un asistente experto. 1) Revisa mi DB: " + db + ". 2) Si la persona no está ahí, usa internet. Responde de forma natural y clara.";
-
+        // 1. INTENTO CON ALYACORE (Rápido)
         const response = await axios.get('https://api.alyacore.xyz/ai/chatgpt', {
-            params: {
-                text: "Pregunta: " + q + " | Filtro: " + promptTotal,
-                key: 'Alya-QLK5j2wJ'
-            }
+            params: { text: "Instruccion: " + syms1 + ". Pregunta: " + text, key: 'Alya-QLK5j2wJ' }
         });
+        if (response.data && response.data.result) return res.send(response.data.result);
+        throw new Error();
 
-        res.send(response.data.result || "No encontré datos sobre eso.");
-    } catch (e) {
-        res.status(500).send("Error en el servidor de IA.");
+    } catch (err) {
+        // 2. RESPALDO CON OPENAI GPT-4O-MINI (Premium)
+        try {
+            const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+                model: 'gpt-4o-mini',
+                messages: [
+                    {role: 'system', content: syms1},
+                    {role: 'user', content: text}
+                ]
+            }, {
+                headers: { 'Authorization': \`Bearer \${OPENAI_KEY}\` }
+            });
+            res.send(gptRes.data.choices[0].message.content);
+        } catch (err2) {
+            res.status(500).send("Error crítico: Ninguna IA respondió.");
+        }
     }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Abraham AI corriendo en puerto ' + PORT));
+app.listen(process.env.PORT || 3000);
+
