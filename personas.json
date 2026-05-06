@@ -1,13 +1,1 @@
-[
-  {"nombre": "Alejandro Ruiz", "edad": 24, "ciudad": "Madrid", "pais": "España", "telefono": "+34 600 123 456", "gmail": "ale.ruiz.24@gmail.com"},
-  {"nombre": "Valentina Gómez", "edad": 31, "ciudad": "Bogotá", "pais": "Colombia", "telefono": "+57 310 987 6543", "gmail": "valen.gomez.doc@gmail.com"},
-  {"nombre": "Mateo Fernández", "edad": 29, "ciudad": "Buenos Aires", "pais": "Argentina", "telefono": "+54 9 11 1234 5678", "gmail": "mateo.fer.95@gmail.com"},
-  {"nombre": "Camila Soto", "edad": 22, "ciudad": "Santiago", "pais": "Chile", "telefono": "+56 9 8765 4321", "gmail": "camisoto.cl@gmail.com"},
-  {"nombre": "Diego Herrera", "edad": 45, "ciudad": "Ciudad de México", "pais": "México", "telefono": "+52 55 1234 5678", "gmail": "d.herrera.mx@gmail.com"},
-  {"nombre": "Lucía Méndez", "edad": 27, "ciudad": "Lima", "pais": "Perú", "telefono": "+51 987 654 321", "gmail": "lucia.mendez.pe@gmail.com"},
-  {"nombre": "Sebastián Castro", "edad": 33, "ciudad": "Quito", "pais": "Ecuador", "telefono": "+593 9 1234 5678", "gmail": "seb.castro.u@gmail.com"},
-  {"nombre": "Hugo Martínez", "edad": 42, "ciudad": "Guadalajara", "pais": "México", "telefono": "+52 33 4455 6677", "gmail": "hugo.mtz.gdl@gmail.com"},
-  {"nombre": "Victoria Peña", "edad": 24, "ciudad": "Medellín", "pais": "Colombia", "telefono": "+57 320 111 2233", "gmail": "vicky.pena.med@gmail.com"},
-  {"nombre": "Javier Cordero", "edad": 31, "ciudad": "Rosario", "pais": "Argentina", "telefono": "+54 9 341 555 6677", "gmail": "javier.cordero.arg@gmail.com"}
-]
-
+[]
