@@ -1,13 +1,21 @@
 {
-  "name": "gatabot-ai-web",
-  "version": "1.3.0",
+  "name": "ia-de-abraham-basededatos",
+  "version": "2.0.0",
+  "description": "Centro de Inteligencia y Extracción de Datos",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "author": "pro_abraham",
+  "contributors": [
+    "Eduardo YT VIP",
+    "Gerardl Craftman"
+  ],
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "express-basic-auth": "^1.2.1",
-    "axios": "^1.6.0"
+    "axios": "^1.6.8",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.4",
+    "readline-sync": "^1.4.10"
   }
 }
